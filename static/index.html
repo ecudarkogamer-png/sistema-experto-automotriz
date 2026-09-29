@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoExpert • Sistema Experto de Diagnóstico Automotriz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface-1: #121215;
+      --surface-2: #18181b;
+      --surface-3: #222226;
+      --surface-active: #27272a;
+      
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(255, 255, 255, 0.22);
+      --border-subtle: rgba(255, 255, 255, 0.04);
+      
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --text-subtle: #71717a;
+      --text-inverse: #09090b;
+      
+      --accent: #3b82f6;
+      --accent-muted: rgba(59, 130, 246, 0.12);
+      
+      --danger: #f43f5e;
+      --danger-surface: rgba(244, 63, 94, 0.1);
+      --danger-border: rgba(244, 63, 94, 0.35);
+      
+      --warning: #f59e0b;
+      --warning-surface: rgba(245, 158, 11, 0.1);
+      --warning-border: rgba(245, 158, 11, 0.35);
+      
+      --success: #10b981;
+      --success-surface: rgba(16, 185, 129, 0.1);
+      --success-border: rgba(16, 185, 129, 0.35);
+      
+      --info: #06b6d4;
+      --info-surface: rgba(6, 182, 212, 0.1);
+      --info-border: rgba(6, 182, 212, 0.35);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* BARRA SUPERIOR */
+    .app-header {
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 9, 11, 0.95);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      background: var(--text);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-inverse);
+      font-weight: 900;
+      font-size: 0.75rem;
+      letter-spacing: -0.05em;
+    }
+
+    .brand-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .brand-divider {
+      color: var(--border-focus);
+      font-size: 0.8rem;
+    }
+
+    .brand-spec {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .app-workspace {
+      flex: 1;
+      display: flex;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      gap: 32px;
+    }
+
+    /* BARRA LATERAL (LISTA DE PUNTOS DE CONTROL) */
+    .sidebar {
+      width: 320px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sidebar-panel {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel-heading {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px;
+    }
+
+    .checklist-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .check-step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .check-step-item:hover {
+      background: var(--surface-2);
+    }
+
+    .check-step-item.active {
+      background: var(--surface-2);
+      border-color: var(--border-focus);
+    }
+
+    .step-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--surface-3);
+      color: var(--text-subtle);
+      flex-shrink: 0;
+    }
+
+    .check-step-item.active .step-badge {
+      background: var(--text);
+      color: var(--text-inverse);
+    }
+
+    .check-step-item.completed .step-badge {
+      background: var(--success-surface);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+
+    .step-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .step-title-text {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .check-step-item.completed .step-title-text {
+      color: var(--text-muted);
+    }
+
+    .step-status-sub {
+      font-size: 0.7rem;
+      color: var(--text-subtle);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .check-step-item.completed .step-status-sub {
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    /* ÁREA PRINCIPAL */
+    .main-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 960px;
+    }
+
+    /* TARJETA DEL ASISTENTE */
+    .stage-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+    }
+
+    .stage-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stage-meta-accent {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stage-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .stage-description {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 720px;
+    }
+
+    /* LISTA DE OPCIONES */
+    .options-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .option-row:hover {
+      border-color: var(--border-focus);
+      background: var(--surface-active);
+    }
+
+    .option-row.selected {
+      border-color: var(--text);
+      background: var(--surface-active);
+      box-shadow: inset 0 0 0 1px var(--text);
+    }
+
+    .keycap-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .option-row.selected .keycap-badge {
+      background: var(--text);
+      color: var(--text-inverse);
+      border-color: var(--text);
+    }
+
+    .option-body {
+      flex: 1;
+    }
+
+    .option-heading {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .option-detail {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    /* PIE DE PÁGINA DEL PASO */
+    .stage-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .key-hints {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+    }
+
+    .key-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .key-hint kbd {
+      padding: 2px 7px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 22px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      letter-spacing: -0.01em;
+      border: 1px solid transparent;
+    }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--surface-3);
+      border-color: var(--border-focus);
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--text-inverse);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #e4e4e7;
+    }
+
+    .btn-execute {
+      background: var(--text);
+      color: var(--text-inverse);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-execute:hover:not(:disabled) {
+      background: #ffffff;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+    }
+
+    /* ================================================================= */
+    /* VISTA DE RESULTADOS (INFORME TÉCNICO DE DIAGNÓSTICO)              */
+    /* ================================================================= */
+    .results-view {
+      display: none;
+    }
+
+    .report-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .report-header-band {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+      gap: 20px;
+    }
+
+    .report-title-area {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .report-docket {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .report-heading {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .severity-tag {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .sev-CRÍTICA {
+      background: var(--danger-surface);
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
+    }
+
+    .sev-ALTA {
+      background: var(--warning-surface);
+      color: var(--warning);
+      border: 1px solid var(--warning-border);
+    }
+
+    .sev-MODERADA {
+      background: var(--info-surface);
+      color: var(--info);
+      border: 1px solid var(--info-border);
+    }
+
+    .sev-PREVENTIVA {
+      background: var(--success-surface);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+
+    /* BLOQUES DE DETALLE DIAGNÓSTICO */
+    .docket-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .docket-grid {
+        grid-template-columns: 2fr 1fr;
+      }
+      .docket-grid .full-col {
+        grid-column: span 2;
+      }
+    }
+
+    .docket-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .docket-box-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .docket-box-value {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .docket-box-value strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* CONSOLA DE TRANSPARENCIA DEL MOTOR */
+    .engine-section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .engine-header {
+      background: var(--surface-3);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .engine-title {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .engine-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .eng-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-subtle);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+    }
+
+    .eng-tab.active {
+      background: var(--surface-1);
+      color: var(--text);
+    }
+
+    .eng-panel {
+      padding: 18px;
+      display: none;
+      max-height: 320px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+
+    .eng-panel.active {
+      display: block;
+    }
+
+    .log-phase-header {
+      color: var(--text);
+      font-weight: 700;
+      margin: 14px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .log-phase-header:first-child {
+      margin-top: 0;
+    }
+
+    .log-line {
+      color: var(--text-subtle);
+      padding: 3px 0;
+    }
+
+    .log-line.hit {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    .log-line.dispatch {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* TABLA DE HECHOS */
+    .facts-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .facts-table th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-subtle);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .facts-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .facts-table tr:hover td {
+      background: var(--surface-3);
+    }
+
+    .facts-table td.fact-key {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* BARRA DE ACCIÓN INFERIOR */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* NOTIFICACIÓN TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface-3);
+      border: 1px solid var(--border-focus);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.2s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      .app-workspace {
+        flex-direction: column;
+        padding: 16px;
+      }
+      .sidebar {
+        width: 100%;
+      }
+      .checklist-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+      .stage-card {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-mark">AE</div>
+      <span class="brand-name">AutoExpert</span>
+      <span class="brand-divider">/</span>
+      <span class="brand-spec">Sistema Experto Automotriz Basado en Reglas</span>
+    </div>
+
+    <div class="header-meta">
+      <div class="system-status">
+        <div class="status-dot"></div>
+        <span>MOTOR DE INFERENCIA ACTIVO</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ESPACIO DE TRABAJO PRINCIPAL (DOS COLUMNAS) -->
+  <main class="app-workspace">
+
+    <!-- PANEL LATERAL IZQUIERDO: 10 PUNTOS DE INSPECCIÓN -->
+    <aside class="sidebar">
+      <div class="sidebar-panel">
+        <div class="panel-heading">
+          <span>Puntos de Inspección</span>
+          <span id="sideProgressText">1 / 10</span>
+        </div>
+
+        <div class="checklist-container" id="checklistContainer">
+          <!-- Se genera dinámicamente -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL: PASO ACTIVO -->
+    <section class="main-stage">
+
+      <!-- TARJETA DEL ASISTENTE DE PREGUNTAS -->
+      <div class="stage-card" id="wizardCard">
+        <div class="stage-meta">
+          <span class="stage-meta-accent" id="stageCategory">SISTEMA DE ENCENDIDO</span>
+          <span>•</span>
+          <span id="stageIndexDisplay">PASO 01 DE 10</span>
+        </div>
+
+        <h1 class="stage-title" id="stageTitle">Cargando inspección...</h1>
+        <p class="stage-description" id="stageDesc">Conectando con el motor de reglas...</p>
+
+        <!-- LISTA DE OPCIONES -->
+        <div class="options-stack" id="optionsStack">
+          <!-- Se genera dinámicamente -->
+        </div>
+
+        <!-- PIE DE NAVEGACIÓN -->
+        <footer class="stage-footer">
+          <div class="key-hints">
+            <span class="key-hint"><kbd>1-4</kbd> Seleccionar opción</span>
+            <span class="key-hint"><kbd>↵ Enter</kbd> Continuar</span>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="btnPrev" disabled onclick="prevStep()">
+              ← Anterior
+            </button>
+            <button class="btn btn-primary" id="btnNext" disabled onclick="nextStep()">
+              Continuar →
+            </button>
+          </div>
+        </footer>
+      </div>
+
+      <!-- TARJETA DE RESULTADOS (INFORME TÉCNICO) -->
+      <div class="results-view" id="resultsCard">
+        <div class="report-card">
+          <!-- ENCABEZADO DEL INFORME -->
+          <div class="report-header-band">
+            <div class="report-title-area">
+              <span class="report-docket">INFORME TÉCNICO DE DIAGNÓSTICO</span>
+              <h2 class="report-heading" id="reportTitle">Dictamen Diagnóstico</h2>
+            </div>
+            <div class="severity-tag" id="reportSevBadge">CRÍTICA</div>
+          </div>
+
+          <!-- BLOQUES DE DESGLOSE -->
+          <div class="docket-grid">
+            <div class="docket-box full-col">
+              <div class="docket-box-label">Explicación Técnica y Causa Raíz</div>
+              <div class="docket-box-value" id="reportExplicacion">-</div>
+            </div>
+
+            <div class="docket-box">
+              <div class="docket-box-label">Acción Recomendada y Protocolo de Seguridad</div>
+              <div class="docket-box-value" id="reportAccion">-</div>
+            </div>
+
+            <div class="docket-box">
+              <div class="docket-box-label">Estimación de Costo / Taller</div>
+              <div class="docket-box-value" id="reportCosto">-</div>
+            </div>
+          </div>
+
+          <!-- CONSOLA DE TRANSPARENCIA DEL MOTOR: 3 FASES -->
+          <div class="engine-section">
+            <div class="engine-header">
+              <span class="engine-title">
+                Consola del Motor de Inferencia
+              </span>
+              <div class="engine-tabs">
+                <button class="eng-tab active" onclick="switchEngTab('tabTrace', this)">Traza de las 3 Fases</button>
+                <button class="eng-tab" onclick="switchEngTab('tabFacts', this)">Hechos Registrados (10)</button>
+              </div>
+            </div>
+
+            <div class="eng-panel active" id="tabTrace">
+              <!-- Traza inyectada dinámicamente -->
+            </div>
+
+            <div class="eng-panel" id="tabFacts">
+              <!-- Tabla de hechos inyectada dinámicamente -->
+            </div>
+          </div>
+
+          <!-- ACCIONES FINALES -->
+          <div class="action-bar">
+            <button class="btn btn-secondary" onclick="restartInspection()">
+              ↺ Nuevo Diagnóstico
+            </button>
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="window.print()">
+                Imprimir Informe
+              </button>
+              <button class="btn btn-primary" onclick="copyReport()">
+                Copiar Informe Técnico
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- NOTIFICACIÓN TOAST -->
+  <div class="toast" id="toastBox">
+    <span id="toastMsg">Informe copiado al portapapeles</span>
+  </div>
+
+  <script>
+    let preguntas = [];
+    let currentStep = 0;
+    let userAnswers = {};
+    let inferenceResult = null;
+
+    const SUBSISTEMAS = [
+      "SISTEMA DE ARRANQUE Y BATERÍA",
+      "ACÚSTICA Y RUIDOS DEL MOTOR",
+      "SISTEMA DE ESCAPE Y EMISIONES",
+      "SISTEMA DE FRENOS HIDRÁULICOS",
+      "CIRCUITO TÉRMICO Y REFRIGERACIÓN",
+      "INSPECCIÓN DE FUGAS DE FLUIDOS",
+      "TESTIGOS DEL CUADRO DE INSTRUMENTOS",
+      "DIRECCIÓN Y TREN DELANTERO",
+      "POTENCIA Y TRANSMISIÓN / EMBRAGUE",
+      "HISTORIAL DE MANTENIMIENTO"
+    ];
+
+    async function init() {
+      try {
+        const res = await fetch('/api/preguntas');
+        preguntas = await res.json();
+        renderSidebarChecklist();
+        showStep(0);
+      } catch (err) {
+        document.getElementById('stageTitle').innerText = "Error de Conexión con el Motor";
+        document.getElementById('stageDesc').innerText = "Asegúrese de que el servidor local de Python esté activo en el puerto 8080.";
+      }
+    }
+
+    function renderSidebarChecklist() {
+      const container = document.getElementById('checklistContainer');
+      container.innerHTML = '';
+
+      preguntas.forEach((q, idx) => {
+        const item = document.createElement('div');
+        item.className = 'check-step-item' + (idx === currentStep ? ' active' : '');
+        item.id = `sideStep-${idx}`;
+        item.onclick = () => {
+          if (idx <= currentStep || userAnswers[preguntas[idx - 1]?.id]) {
+            showStep(idx);
+          }
+        };
+
+        const shortTitle = q.titulo.replace(/^\d+\.\s*/, '');
+
+        item.innerHTML = `
+          <div class="step-badge">${idx + 1}</div>
+          <div class="step-info">
+            <div class="step-title-text">${shortTitle}</div>
+            <div class="step-status-sub" id="sideStatus-${idx}">Pendiente</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function updateSidebarChecklist() {
+      document.getElementById('sideProgressText').innerText = `${currentStep + 1} / ${preguntas.length}`;
+
+      preguntas.forEach((q, idx) => {
+        const item = document.getElementById(`sideStep-${idx}`);
+        const statusSub = document.getElementById(`sideStatus-${idx}`);
+        if (!item) return;
+
+        item.classList.remove('active', 'completed');
+
+        if (userAnswers[q.id]) {
+          item.classList.add('completed');
+          const opt = q.opciones.find(o => o[0] === userAnswers[q.id]);
+          statusSub.innerText = opt ? opt[1] : 'Registrado';
+        } else {
+          statusSub.innerText = (idx === currentStep) ? 'Evaluando' : 'Pendiente';
+        }
+
+        if (idx === currentStep) {
+          item.classList.add('active');
+        }
+      });
+    }
+
+    function showStep(index) {
+      currentStep = index;
+      const q = preguntas[currentStep];
+
+      updateSidebarChecklist();
+
+      // Encabezados
+      document.getElementById('stageCategory').innerText = SUBSISTEMAS[currentStep] || "SISTEMA DEL VEHÍCULO";
+      document.getElementById('stageIndexDisplay').innerText = `PASO 0${currentStep + 1} DE 10`;
+      document.getElementById('stageTitle').innerText = q.titulo.replace(/^\d+\.\s*/, '');
+      document.getElementById('stageDesc').innerText = q.descripcion;
+
+      // Opciones
+      const stack = document.getElementById('optionsStack');
+      stack.innerHTML = '';
+
+      q.opciones.forEach((opt, optIdx) => {
+        const [val, label, subtext] = opt;
+        const isSelected = userAnswers[q.id] === val;
+
+        const row = document.createElement('div');
+        row.className = 'option-row' + (isSelected ? ' selected' : '');
+        row.onclick = () => selectOption(q.id, val);
+
+        row.innerHTML = `
+          <div class="keycap-badge">${optIdx + 1}</div>
+          <div class="option-body">
+            <div class="option-heading">${label}</div>
+            <div class="option-detail">${subtext}</div>
+          </div>
+        `;
+        stack.appendChild(row);
+      });
+
+      // Botones
+      document.getElementById('btnPrev').disabled = currentStep === 0;
+
+      const btnNext = document.getElementById('btnNext');
+      const hasAnswer = Boolean(userAnswers[q.id]);
+      btnNext.disabled = !hasAnswer;
+
+      if (currentStep === preguntas.length - 1) {
+        btnNext.className = 'btn btn-execute';
+        btnNext.innerHTML = 'Realizar Diagnóstico ↵';
+      } else {
+        btnNext.className = 'btn btn-primary';
+        btnNext.innerHTML = 'Continuar →';
+      }
+    }
+
+    function selectOption(factId, val) {
+      userAnswers[factId] = val;
+      showStep(currentStep);
+    }
+
+    function prevStep() {
+      if (currentStep > 0) {
+        showStep(currentStep - 1);
+      }
+    }
+
+    async function nextStep() {
+      if (currentStep < preguntas.length - 1) {
+        showStep(currentStep + 1);
+      } else {
+        await executeEngine();
+      }
+    }
+
+    async function executeEngine() {
+      const btnNext = document.getElementById('btnNext');
+      btnNext.disabled = true;
+      btnNext.innerText = 'Evaluando Reglas...';
+
+      try {
+        const res = await fetch('/api/diagnosticar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hechos: userAnswers })
+        });
+        inferenceResult = await res.json();
+        renderResults();
+      } catch (err) {
+        showToast("Error al ejecutar inferencia: " + err);
+        btnNext.disabled = false;
+        btnNext.innerHTML = 'Realizar Diagnóstico ↵';
+      }
+    }
+
+    function renderResults() {
+      document.getElementById('wizardCard').style.display = 'none';
+      const rCard = document.getElementById('resultsCard');
+      rCard.style.display = 'block';
+
+      const res = inferenceResult;
+
+      // Encabezado
+      document.getElementById('reportTitle').innerText = res.diagnostico;
+      const sevBadge = document.getElementById('reportSevBadge');
+      sevBadge.className = `severity-tag sev-${res.severidad}`;
+      sevBadge.innerText = `${res.severidad} • REGLA ${res.regla_disparada ? res.regla_disparada.id : 'N/A'}`;
+
+      // Cajas de detalle en español
+      document.getElementById('reportExplicacion').innerHTML = res.explicacion;
+      document.getElementById('reportAccion').innerHTML = `<strong>Acción Inmediata:</strong> ${res.accion}`;
+      document.getElementById('reportCosto').innerHTML = `<strong>Impacto Estimado:</strong> ${res.costo_estimado}`;
+
+      // Traza del motor
+      const tabTrace = document.getElementById('tabTrace');
+      tabTrace.innerHTML = '';
+
+      res.trazas.forEach((traza) => {
+        const head = document.createElement('div');
+        head.className = 'log-phase-header';
+        head.innerText = `>>> ${traza.nombre.toUpperCase()}`;
+        tabTrace.appendChild(head);
+
+        traza.detalles.forEach(line => {
+          const l = document.createElement('div');
+          l.className = 'log-line';
+          if (line.includes('[EQUIPARADA]') || line.includes('[SELECCIONADA]')) {
+            l.className += ' hit';
+          }
+          if (line.startsWith('-> Acción ejecutada')) {
+            l.className += ' dispatch';
+          }
+          l.innerText = line;
+          tabTrace.appendChild(l);
+        });
+      });
+
+      // Tabla de hechos en español
+      const tabFacts = document.getElementById('tabFacts');
+      tabFacts.innerHTML = '';
+
+      let tableHtml = `<table class="facts-table"><thead><tr><th>Punto de Control</th><th>Identificador del Hecho</th><th>Valor Registrado</th></tr></thead><tbody>`;
+      preguntas.forEach((q) => {
+        const val = userAnswers[q.id];
+        const opt = q.opciones.find(o => o[0] === val);
+        const optLabel = opt ? opt[1] : val;
+        tableHtml += `<tr>
+          <td class="fact-key">${q.titulo.replace(/^\d+\.\s*/, '')}</td>
+          <td><code>${q.id}</code></td>
+          <td><strong>${optLabel}</strong></td>
+        </tr>`;
+      });
+      tableHtml += `</tbody></table>`;
+      tabFacts.innerHTML = tableHtml;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchEngTab(tabId, btn) {
+      document.querySelectorAll('.eng-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.eng-panel').forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function restartInspection() {
+      userAnswers = {};
+      inferenceResult = null;
+      document.getElementById('resultsCard').style.display = 'none';
+      document.getElementById('wizardCard').style.display = 'flex';
+      renderSidebarChecklist();
+      showStep(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function copyReport() {
+      if (!inferenceResult) return;
+      const text = `=== INFORME DE DIAGNÓSTICO - AUTOEXPERT ===\n` +
+        `DIAGNÓSTICO: ${inferenceResult.diagnostico}\n` +
+        `SEVERIDAD: ${inferenceResult.severidad}\n` +
+        `REGLA DISPARADA: ${inferenceResult.regla_disparada ? inferenceResult.regla_disparada.id : 'N/A'}\n\n` +
+        `EXPLICACIÓN TÉCNICA:\n${inferenceResult.explicacion}\n\n` +
+        `ACCIÓN RECOMENDADA:\n${inferenceResult.accion}\n\n` +
+        `IMPACTO FINANCIERO / TALLER:\n${inferenceResult.costo_estimado}\n` +
+        `===========================================`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Informe copiado al portapapeles");
+      }).catch(err => {
+        showToast("Error al copiar: " + err);
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastBox');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    // Atajos de teclado: 1-4 para opciones, Enter para avanzar, Backspace para retroceder
+    window.addEventListener('keydown', (e) => {
+      if (document.getElementById('wizardCard').style.display === 'none') return;
+      const q = preguntas[currentStep];
+      if (!q) return;
+
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const idx = parseInt(e.key, 10) - 1;
+        if (q.opciones[idx]) {
+          selectOption(q.id, q.opciones[idx][0]);
+        }
+      } else if (e.key === 'Enter') {
+        const btnNext = document.getElementById('btnNext');
+        if (!btnNext.disabled) {
+          nextStep();
+        }
+      } else if (e.key === 'Backspace' && !['input', 'textarea'].includes(document.activeElement.tagName.toLowerCase())) {
+        prevStep();
+      }
+    });
+
+    window.onload = init;
+  </script>
+</body>
+</html>
